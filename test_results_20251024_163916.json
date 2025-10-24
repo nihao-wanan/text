@@ -1,0 +1,375 @@
+{
+  "metadata": {
+    "total_tasks": 30,
+    "success_tasks": 3,
+    "total_cost_seconds": 8.06
+  },
+  "results": [
+    {
+      "cycle_number": 1,
+      "msg_index": 1,
+      "message": "2024 年 10 月 20 日漳河当前生活供水流量是多少，还有工业、农业、发电的供水流量分别是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 2,
+      "message": "现在漳河的生活供水流量是多少，另外工业用水、农业灌溉、发电的供水流量各有多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": 0,
+        "message": "SUCCESS",
+        "data": {
+          "message": "%E6%BC%B3%E6%B2%B3%E7%81%8C%E5%8C%BA%E9%A6%96%E8%BD%AE%E6%98%A5%E7%81%8C%E8%AE%A1%E5%88%92%E4%BE%9B%E6%B0%B4%E6%80%BB%E9%87%8F%E6%98%AF%E5%A4%9A%E5%B0%91%E5%B7%B2%E4%BE%9B%E6%B0%B4%E5%A4%9A%E5%B0%91%E8%BF%98%E9%9C%80%E4%BE%9B%E6%B0%B4%E5%A4%9A%E5%B0%91",
+          "sysPrompt": "# 水资源意图识别系统 v2.0\n\n你是一名智能意图识别系统，负责分析用户的自然语言问题，识别其业务类型、所需的 MCP 工具、或对应的复合业务工作流。\n\n---\n\n## 【识别流程】\n\n### 分类决策树\n\n按以下顺序判断用户问题的分类：\n\n```\n第一层：问题是否在标准问题库中？\n├─ 是 → 按标准问题库返回对应的工具、Server和workflowCode\n└─ 否 → 进入第二层\n\n第二层：分析问题的业务类型（水资源/防汛/调度等）\n└─ 是否在MCP工具知识库中找到可执行的工具？\n├─ 是 → 识别对应的MCP工具和Server，返回结果\n└─ 否 → 进入第三层\n\n第三层：问题无法通过MCP工具执行\n└─ 返回知识库查询标识\n{\n\"intent\": \"未知意图\",\n\"category\": \"知识库查询\",\n\"workflowCode\": \"KB_QUERY\"\n}\n```\n\n---\n\n## 【输出格式】\n\n请严格按照以下JSON格式输出，不要包含其他文字或解释：\n{\n  \"intent\": \"用户意图的简要描述\",\n  \"businessName\": \"对应标准问题库中的业务名称\",\n  \"category\": \"水资源 | 防汛 | 调度 | 复合分类 | 未知\",\n  \"workflowCode\": \"仅复合分类时返回工作流代码，其他情况为 null\",\n  \"servers\": {\n    \"serverName\": \"MCP_SERVER_NAME\",\n    \"tools\": \"tool1\"\n  }\n}\n\n**字段说明：**\n\n- `intent`：用户问题的核心诉求\n- `businessName`：对应标准问题库中的业务名称，便于追踪和关联\n- `category`：业务分类\n- `workflowCode`：工作流代码，仅复合分类时有值；单步执行或未知则为 null\n- `servers`：调用的MCP服务及工具列表；未知分类时为 []\n\n\n---\n## 【标准问题库】\n  | 类型   | 业务名称                                       | MCP Server                        | MCP Tools                                                                     | workflowCode |\n|------|--------------------------------------------|-----------------------------------|-------------------------------------------------------------------------------|--------------|\n| 水资源  | 漳河当前生活供水流量是多少？（工业、农业、发电）                   | Evangelion-mcp-zh-search-info     | getWaterSupplyFlow                                                            | null         |\n| 水资源  | 漳河灌区蓄水总量是多少？有效水量是多少？                       | Evangelion-mcp-zh-search-info     | getWrmStorageRes                                                              | null         |\n| 水资源  | 计划供水总量是多少？（已供水、还需供水）                       | Evangelion-mcp-zh-search-info     | querySupplyDemandContrast                                                     | null         |\n| 水资源  | 今年农业灌溉水方是多少？（生态）                           | Evangelion-mcp-zh-search-info     | selectWarehouseAndWaterTotalTable                                             | null         |\n| 复合分类 | 按当前雨情/落地雨并考虑降雨预测，入库洪量多少，库水位最高涨至多少          |        |  | 3ae34797-5d3e-43e1-8e50-5b4fcbb2b96a         |\n| 复合分类 | 某站某时间段累计降雨/某库某时间段累计来水，与多年同期/去年相比偏多/偏少几成    |  |            | 7b76d043-ba3f-44ba-b907-03f6d3c17e32         |\n| 复合分类 | 按当前流量，某闸开闸后多长时间可达某断面                       |                                   |           | null         |\n| 复合分类 | 按当前供用水，多长时间后需开/调/关某进水闸                     |                                   |           | null         |\n| 复合分类 | 按当前流量，某闸开闸后多长时间可达某断面                       |                                   |           | null         |\n| 复合分类 | 按当前供用水，多长时间后需开/调/关某进水闸                     |                                   |           | NULL         |\n| 复合分类 | 帮我总结下今年1-6月份白蚁防治/维修养护/日常巡查的工作成果            |                                   |                                                                               | NULL         |\n| 防汛   | 某站历史最高水位/最大流量/最大雨强及发生时间                    | Evangelion-mcp-zh-search-info     | getHistoryRiverInfo                                                           | null         |\n| 防汛   | 现在哪些地方在下雨                                  | Evangelion-mcp-zh-search-info     | getRiverRInfo                                                                 | null         |\n| 防汛   | 明日流域平均面雨量是多少?                              | Evangelion-mcp-zh-flood           | queryIrrRainConditions                                                        | null         |\n| 防汛   | 明日灌区平均面雨量是多少?                              | Evangelion-mcp-zh-flood           | queryRainConditions                                                           | null         |\n| 防汛   | 漳河水库过去、未来24小时降雨量是多少？                       | Evangelion-mcp-zh-flood           | getWaterAndRainData                                                           | null         |\n| 防汛   | 当前1小时最大降雨量在哪？                              | Evangelion-mcp-zh-search-info     | getHistoryRsvrInfo                                                            | null         |\n| 防汛   | 漳河水库入库流量是多少？                               | Evangelion-mcp-zh-flood           | getWaterAndRainData                                                           | null         |\n| 防汛   | 漳河水库出库流量是多少？                               | Evangelion-mcp-zh-flood           | getWaterAndRainData                                                           | null         |\n| 防汛   | 漳河水库当前水位、库容是多少？鸡公尖的水位、库容                   | Evangelion-mcp-zh-flood           | getRscpData                                                                   | null         |\n| 防汛   | 漳河水库当前可抗雨量是多少？                             | Evangelion-mcp-zh-flood           | getResistanceData                                                             | null         |\n| 防汛  | 漳河灌区今年降雨量多少？                      | Evangelion-mcp-zh-flood       | queryRainSituation                                                            | null         |\n| 调度  | 调整闸门开度，如：请根据XX闸门调度令调整闸门开度。        | Evangelion-mcp-zh-scheduling  | navigateToSchedulingPage                                                      | null         |\n| 调度 | 中稻当前生育阶段，未来10天需漳河水库亩均供水多少（水方）    | Evangelion-mcp-zh-scheduling  |      queryDefaultCalculationResult     | null         |\n\n---\n## 【MCP工具知识库】\n  \n### Evangelion-Rag\n\n查询文档知识库相关数据\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `queryKnowledgeAgent` | 知识库查询 |\n\n---\n\n### Evangelion-mcp-zh-search-info\n\n漳河水库-水资源查询业务\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `getRepair` | 维修养护状况 |\n| `getHistoryVideoInfo` | 根据条件查询数据库中视频测站历史数据 |\n| `queryRiverConditions` | 河道水情概览 |\n| `querySupplyDemandContrast` | 漳河灌区整体供水总量与需水量的对比分析（含时段差异、各类型供水需水统计） |\n| `getHistoryRsvrInfo` | 根据条件查询数据库中水库测站历史数据 |\n| `queryChannelConditions` | 渠道水情概览 |\n| `getHistoryRiverInfo` | 根据条件查询数据库中渠道/河道测站历史数据 |\n| `getCaseStatistics` | 水政巡查状况 |\n| `getRsvrRInfo` | 根据条件查询数据库中水库测站实时数据 |\n| `queryIrrWaterSupply` | 获得当前漳河灌区/各干渠供水总量数据 |\n| `queryWaterQuality` | 水质概览 |\n| `queryWaterConditions` | 水库水情概览 |\n| `selectWarehouseAndWaterTotalTable` | 水资源分类，进行供水统计分析出库水方的数据分析 |\n| `queryWaterSituation` | 墒情概览 |\n| `getVideoRInfo` | 根据条件查询数据库中视频测站实力数据 |\n| `getWaterSupplyFlow` | 获得当前漳河灌区生活供水流量数据 |\n| `getWrmStorageRes` | 漳河/各干渠蓄水量概览 |\n| `getWaterUse` | 城乡用水概览 |\n| `getRiverRInfo` | 根据条件查询数据库中渠道/河道测站实时数据 |\n\n---\n\n### Evangelion-Math\n\n查询漳河系统业务数据库中天气预警相关数据\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `calculateRingGrowthRate` | 计算环比增长率 |\n| `calculateMultipleRingGrowthRates` | 计算多个时期的环比增长率序列 |\n\n---\n\n### Evangelion-Weather\n\n查询漳河系统业务数据库中天气预警相关数据\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `getWeatherData` | 根据条件查询气象预警/预测数据 |\n\n---\n\n### mcp-server\n\nmcp-server\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `searchMcpServer` | 根据任务描述和关键词搜索合适的 MCP Server |\n| `useTool` | 使用指定 MCP Server 的工具 |\n| `addMcpServer` | 添加并初始化一个MCP Server，根据Nacos中的配置与该MCP Server建立连接，等待调用 |\n| `debugMcpService` | 调试 MCP 服务连接状态，帮助诊断连接问题 |\n\n---\n\n### Evangelion-mcp-zh-flood\n\n漳河水库-水资源防汛业务\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `queryRainSituation` | 漳河灌区/流域年度降雨形势数据 |\n| `getModelStatisticsOfIndicators` | 数字漳河项目，防洪调度平台，根据时间范围查询洪水预报-方案计算流程流域降雨过程数据,输出预报成果过程分析 |\n| `queryRainConditions` | 流域雨情概览 |\n| `queryIrrRainConditions` | 漳河灌区范围内降雨整体趋势概览（含漳河流域近24小时平均降雨量、最大降雨量等数据） |\n| `testSchemeCalculationAPI` | 数字漳河项目，防洪调度平台，根据时间范围查询洪水预报-方案计算流程测试方法 |\n| `getRscpData` | 获得漳河水库有效库容数据 |\n| `getWaterAndRainData` | 获得漳河水库当前水雨情数据 |\n| `buildSchemeCalculation` | 数字漳河项目，防洪调度平台，根据时间范围构建洪水预报方案计算流程查询条件方案 |\n| `callSchemeCalculation` | 数字漳河项目，防洪调度平台，根据时间范围查询洪水预报-方案计算流程流域降雨过程数据,分析当前的雨情数据 |\n| `getResistanceData` | 获得漳河水库可抗雨量数据 |\n\n---\n\n\n\n## 【示例分析】\n\n**示例1：单步执行 - 水资源类**\n\n  ```json\n{\n  \"intent\": \"查询漳河灌区当前生活供水流量\",\n  \"businessName\": \"漳河当前生活供水流量是多少？（工业、农业、发电）\",\n  \"category\": \"水资源\",\n  \"workflowCode\": null,\n  \"servers\": {\n    \"serverName\": \"Evangelion-mcp-zh-search-info\",\n    \"tools\": \"getWaterSupplyFlow\"\n  }\n}\n  ```\n\n**示例2：单步执行 - 防汛查询类**\n\n  ```json\n{\n  \"intent\": \"查询漳河水库可抗雨量\",\n  \"businessName\": \"漳河水库当前可抗雨量是多少？\",\n  \"category\": \"防汛\",\n  \"workflowCode\": null,\n  \"servers\": {\n    \"serverName\": \"Evangelion-mcp-zh-flood\",\n    \"tools\": \"getResistanceData\"\n  }\n}\n  ```\n\n**示例3：复合分类 - 工作流**\n\n  ```json\n{\n  \"intent\": \"分析当前及预测雨情下的入库洪量和库水位变化\",\n  \"businessName\": \"按当前雨情/落地雨并考虑降雨预测，入库洪量多少，库水位最高涨至多少\",\n  \"category\": \"复合分类\",\n  \"workflowCode\": \"3ae34797-5d3e-43e1-8e50-5b4fcbb2b96a\"\n}\n  ```\n\n**示例5：未知分类**\n\n  ```json\n{\n  \"intent\": \"未知意图\",\n  \"category\": \"知识库查询\",\n  \"workflowCode\": \"KB_QUERY\"\n}\n  ```\n\n---\n\n## 【注意事项】\n\n1. **只分析用户的单次问题**，不考虑对话历史或上下文\n2. **优先匹配标准问题库**：如果用户问题与标准问题库中的业务名称相匹配或语义相近，直接返回对应的MCP工具和workflowCode\n3. **workflowCode说明**：\n  - `null`：单步执行，直接调用MCP工具\n  - 非null值 ：复合分类，返回工作流代码给后端处理\n4. **若问题无法匹配标准问题库**，设置 `category=\"知识库查询\"` 和 `servers=[]`\n5. **注意只输出json格式数据\n\n---\n",
+          "originalResult": "<think>\n好的，我需要处理用户的问题：“漫河灌区首轮春灌供水总量是多少已供水多少还需供水多少”。首先，我要按照流程一步步分析。\n\n第一步，检查用户的问题是否在标准问题库中。标准问题库里的水资源类别中有“计划供水总量是多少？（已供水、还需供水）”对应的MCP工具是querySupplyDemandContrast，服务器是Evangelion-mcp-zh-search-info。用户的问题提到供水总量、已供水和还需供水，这和标准问题库中的业务名称非常接近，所以应该匹配成功。\n\n接下来，确认业务类型是水资源，对应的工具是querySupplyDemandContrast，服务器是Evangelion-mcp-zh-search-info。因为这是一个单步执行的查询，所以workflowCode为null。不需要进入后续步骤，直接返回结果即可。\n\n需要确保输出格式正确，只包含intent、businessName、category、workflowCode和servers。用户的问题没有提到复合分类或需要知识库查询，所以category是“水资源”，servers里包含对应的服务器和工具。\n\n最后，检查是否有拼写错误或格式问题，确保JSON正确无误。\n</think>\n\n{\n  \"intent\": \"查询漳河灌区首轮春灌供水总量及已供水、需供水情况\",\n  \"businessName\": \"计划供水总量是多少？（已供水、还需供水）\",\n  \"category\": \"水资源\",\n  \"workflowCode\": null,\n  \"servers\": {\n    \"serverName\": \"Evangelion-mcp-zh-search-info\",\n    \"tools\": \"querySupplyDemandContrast\"\n  }\n}",
+          "intent": "查询漳河灌区首轮春灌供水总量及已供水、需供水情况",
+          "businessName": "计划供水总量是多少？（已供水、还需供水）",
+          "category": "水资源",
+          "workflowCode": null,
+          "servers": {
+            "serverName": "Evangelion-mcp-zh-search-info",
+            "tools": "querySupplyDemandContrast"
+          }
+        }
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 3,
+      "message": "截至 2024 年 9 月 5 日，漳河当前生活供水流量是多少，工业、农业、发电的供水流量能告知一下吗",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 4,
+      "message": "漳河当前的生活供水流量数据是多少，包括工业、农业和发电这三个方面的供水流量",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 5,
+      "message": "2024 年 8 月中旬漳河当前生活供水流量是多少，工业、农业、发电各自的供水流量是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": 0,
+        "message": "SUCCESS",
+        "data": {
+          "message": "%E6%BC%B3%E6%B2%B3%E7%81%8C%E5%8C%BA%E9%A6%96%E8%BD%AE%E6%98%A5%E7%81%8C%E8%AE%A1%E5%88%92%E4%BE%9B%E6%B0%B4%E6%80%BB%E9%87%8F%E6%98%AF%E5%A4%9A%E5%B0%91%E5%B7%B2%E4%BE%9B%E6%B0%B4%E5%A4%9A%E5%B0%91%E8%BF%98%E9%9C%80%E4%BE%9B%E6%B0%B4%E5%A4%9A%E5%B0%91",
+          "sysPrompt": "# 水资源意图识别系统 v2.0\n\n你是一名智能意图识别系统，负责分析用户的自然语言问题，识别其业务类型、所需的 MCP 工具、或对应的复合业务工作流。\n\n---\n\n## 【识别流程】\n\n### 分类决策树\n\n按以下顺序判断用户问题的分类：\n\n```\n第一层：问题是否在标准问题库中？\n├─ 是 → 按标准问题库返回对应的工具、Server和workflowCode\n└─ 否 → 进入第二层\n\n第二层：分析问题的业务类型（水资源/防汛/调度等）\n└─ 是否在MCP工具知识库中找到可执行的工具？\n├─ 是 → 识别对应的MCP工具和Server，返回结果\n└─ 否 → 进入第三层\n\n第三层：问题无法通过MCP工具执行\n└─ 返回知识库查询标识\n{\n\"intent\": \"未知意图\",\n\"category\": \"知识库查询\",\n\"workflowCode\": \"KB_QUERY\"\n}\n```\n\n---\n\n## 【输出格式】\n\n请严格按照以下JSON格式输出，不要包含其他文字或解释：\n{\n  \"intent\": \"用户意图的简要描述\",\n  \"businessName\": \"对应标准问题库中的业务名称\",\n  \"category\": \"水资源 | 防汛 | 调度 | 复合分类 | 未知\",\n  \"workflowCode\": \"仅复合分类时返回工作流代码，其他情况为 null\",\n  \"servers\": {\n    \"serverName\": \"MCP_SERVER_NAME\",\n    \"tools\": \"tool1\"\n  }\n}\n\n**字段说明：**\n\n- `intent`：用户问题的核心诉求\n- `businessName`：对应标准问题库中的业务名称，便于追踪和关联\n- `category`：业务分类\n- `workflowCode`：工作流代码，仅复合分类时有值；单步执行或未知则为 null\n- `servers`：调用的MCP服务及工具列表；未知分类时为 []\n\n\n---\n## 【标准问题库】\n  | 类型   | 业务名称                                       | MCP Server                        | MCP Tools                                                                     | workflowCode |\n|------|--------------------------------------------|-----------------------------------|-------------------------------------------------------------------------------|--------------|\n| 水资源  | 漳河当前生活供水流量是多少？（工业、农业、发电）                   | Evangelion-mcp-zh-search-info     | getWaterSupplyFlow                                                            | null         |\n| 水资源  | 漳河灌区蓄水总量是多少？有效水量是多少？                       | Evangelion-mcp-zh-search-info     | getWrmStorageRes                                                              | null         |\n| 水资源  | 计划供水总量是多少？（已供水、还需供水）                       | Evangelion-mcp-zh-search-info     | querySupplyDemandContrast                                                     | null         |\n| 水资源  | 今年农业灌溉水方是多少？（生态）                           | Evangelion-mcp-zh-search-info     | selectWarehouseAndWaterTotalTable                                             | null         |\n| 复合分类 | 按当前雨情/落地雨并考虑降雨预测，入库洪量多少，库水位最高涨至多少          |        |  | 3ae34797-5d3e-43e1-8e50-5b4fcbb2b96a         |\n| 复合分类 | 某站某时间段累计降雨/某库某时间段累计来水，与多年同期/去年相比偏多/偏少几成    |  |            | 7b76d043-ba3f-44ba-b907-03f6d3c17e32         |\n| 复合分类 | 按当前流量，某闸开闸后多长时间可达某断面                       |                                   |           | null         |\n| 复合分类 | 按当前供用水，多长时间后需开/调/关某进水闸                     |                                   |           | null         |\n| 复合分类 | 按当前流量，某闸开闸后多长时间可达某断面                       |                                   |           | null         |\n| 复合分类 | 按当前供用水，多长时间后需开/调/关某进水闸                     |                                   |           | NULL         |\n| 复合分类 | 帮我总结下今年1-6月份白蚁防治/维修养护/日常巡查的工作成果            |                                   |                                                                               | NULL         |\n| 防汛   | 某站历史最高水位/最大流量/最大雨强及发生时间                    | Evangelion-mcp-zh-search-info     | getHistoryRiverInfo                                                           | null         |\n| 防汛   | 现在哪些地方在下雨                                  | Evangelion-mcp-zh-search-info     | getRiverRInfo                                                                 | null         |\n| 防汛   | 明日流域平均面雨量是多少?                              | Evangelion-mcp-zh-flood           | queryIrrRainConditions                                                        | null         |\n| 防汛   | 明日灌区平均面雨量是多少?                              | Evangelion-mcp-zh-flood           | queryRainConditions                                                           | null         |\n| 防汛   | 漳河水库过去、未来24小时降雨量是多少？                       | Evangelion-mcp-zh-flood           | getWaterAndRainData                                                           | null         |\n| 防汛   | 当前1小时最大降雨量在哪？                              | Evangelion-mcp-zh-search-info     | getHistoryRsvrInfo                                                            | null         |\n| 防汛   | 漳河水库入库流量是多少？                               | Evangelion-mcp-zh-flood           | getWaterAndRainData                                                           | null         |\n| 防汛   | 漳河水库出库流量是多少？                               | Evangelion-mcp-zh-flood           | getWaterAndRainData                                                           | null         |\n| 防汛   | 漳河水库当前水位、库容是多少？鸡公尖的水位、库容                   | Evangelion-mcp-zh-flood           | getRscpData                                                                   | null         |\n| 防汛   | 漳河水库当前可抗雨量是多少？                             | Evangelion-mcp-zh-flood           | getResistanceData                                                             | null         |\n| 防汛  | 漳河灌区今年降雨量多少？                      | Evangelion-mcp-zh-flood       | queryRainSituation                                                            | null         |\n| 调度  | 调整闸门开度，如：请根据XX闸门调度令调整闸门开度。        | Evangelion-mcp-zh-scheduling  | navigateToSchedulingPage                                                      | null         |\n| 调度 | 中稻当前生育阶段，未来10天需漳河水库亩均供水多少（水方）    | Evangelion-mcp-zh-scheduling  |      queryDefaultCalculationResult     | null         |\n\n---\n## 【MCP工具知识库】\n  \n### Evangelion-Rag\n\n查询文档知识库相关数据\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `queryKnowledgeAgent` | 知识库查询 |\n\n---\n\n### Evangelion-mcp-zh-search-info\n\n漳河水库-水资源查询业务\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `getRepair` | 维修养护状况 |\n| `getHistoryVideoInfo` | 根据条件查询数据库中视频测站历史数据 |\n| `queryRiverConditions` | 河道水情概览 |\n| `querySupplyDemandContrast` | 漳河灌区整体供水总量与需水量的对比分析（含时段差异、各类型供水需水统计） |\n| `getHistoryRsvrInfo` | 根据条件查询数据库中水库测站历史数据 |\n| `queryChannelConditions` | 渠道水情概览 |\n| `getHistoryRiverInfo` | 根据条件查询数据库中渠道/河道测站历史数据 |\n| `getCaseStatistics` | 水政巡查状况 |\n| `getRsvrRInfo` | 根据条件查询数据库中水库测站实时数据 |\n| `queryIrrWaterSupply` | 获得当前漳河灌区/各干渠供水总量数据 |\n| `queryWaterQuality` | 水质概览 |\n| `queryWaterConditions` | 水库水情概览 |\n| `selectWarehouseAndWaterTotalTable` | 水资源分类，进行供水统计分析出库水方的数据分析 |\n| `queryWaterSituation` | 墒情概览 |\n| `getVideoRInfo` | 根据条件查询数据库中视频测站实力数据 |\n| `getWaterSupplyFlow` | 获得当前漳河灌区生活供水流量数据 |\n| `getWrmStorageRes` | 漳河/各干渠蓄水量概览 |\n| `getWaterUse` | 城乡用水概览 |\n| `getRiverRInfo` | 根据条件查询数据库中渠道/河道测站实时数据 |\n\n---\n\n### Evangelion-Math\n\n查询漳河系统业务数据库中天气预警相关数据\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `calculateRingGrowthRate` | 计算环比增长率 |\n| `calculateMultipleRingGrowthRates` | 计算多个时期的环比增长率序列 |\n\n---\n\n### Evangelion-Weather\n\n查询漳河系统业务数据库中天气预警相关数据\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `getWeatherData` | 根据条件查询气象预警/预测数据 |\n\n---\n\n### mcp-server\n\nmcp-server\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `searchMcpServer` | 根据任务描述和关键词搜索合适的 MCP Server |\n| `useTool` | 使用指定 MCP Server 的工具 |\n| `addMcpServer` | 添加并初始化一个MCP Server，根据Nacos中的配置与该MCP Server建立连接，等待调用 |\n| `debugMcpService` | 调试 MCP 服务连接状态，帮助诊断连接问题 |\n\n---\n\n### Evangelion-mcp-zh-flood\n\n漳河水库-水资源防汛业务\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `queryRainSituation` | 漳河灌区/流域年度降雨形势数据 |\n| `getModelStatisticsOfIndicators` | 数字漳河项目，防洪调度平台，根据时间范围查询洪水预报-方案计算流程流域降雨过程数据,输出预报成果过程分析 |\n| `queryRainConditions` | 流域雨情概览 |\n| `queryIrrRainConditions` | 漳河灌区范围内降雨整体趋势概览（含漳河流域近24小时平均降雨量、最大降雨量等数据） |\n| `testSchemeCalculationAPI` | 数字漳河项目，防洪调度平台，根据时间范围查询洪水预报-方案计算流程测试方法 |\n| `getRscpData` | 获得漳河水库有效库容数据 |\n| `getWaterAndRainData` | 获得漳河水库当前水雨情数据 |\n| `buildSchemeCalculation` | 数字漳河项目，防洪调度平台，根据时间范围构建洪水预报方案计算流程查询条件方案 |\n| `callSchemeCalculation` | 数字漳河项目，防洪调度平台，根据时间范围查询洪水预报-方案计算流程流域降雨过程数据,分析当前的雨情数据 |\n| `getResistanceData` | 获得漳河水库可抗雨量数据 |\n\n---\n\n\n\n## 【示例分析】\n\n**示例1：单步执行 - 水资源类**\n\n  ```json\n{\n  \"intent\": \"查询漳河灌区当前生活供水流量\",\n  \"businessName\": \"漳河当前生活供水流量是多少？（工业、农业、发电）\",\n  \"category\": \"水资源\",\n  \"workflowCode\": null,\n  \"servers\": {\n    \"serverName\": \"Evangelion-mcp-zh-search-info\",\n    \"tools\": \"getWaterSupplyFlow\"\n  }\n}\n  ```\n\n**示例2：单步执行 - 防汛查询类**\n\n  ```json\n{\n  \"intent\": \"查询漳河水库可抗雨量\",\n  \"businessName\": \"漳河水库当前可抗雨量是多少？\",\n  \"category\": \"防汛\",\n  \"workflowCode\": null,\n  \"servers\": {\n    \"serverName\": \"Evangelion-mcp-zh-flood\",\n    \"tools\": \"getResistanceData\"\n  }\n}\n  ```\n\n**示例3：复合分类 - 工作流**\n\n  ```json\n{\n  \"intent\": \"分析当前及预测雨情下的入库洪量和库水位变化\",\n  \"businessName\": \"按当前雨情/落地雨并考虑降雨预测，入库洪量多少，库水位最高涨至多少\",\n  \"category\": \"复合分类\",\n  \"workflowCode\": \"3ae34797-5d3e-43e1-8e50-5b4fcbb2b96a\"\n}\n  ```\n\n**示例5：未知分类**\n\n  ```json\n{\n  \"intent\": \"未知意图\",\n  \"category\": \"知识库查询\",\n  \"workflowCode\": \"KB_QUERY\"\n}\n  ```\n\n---\n\n## 【注意事项】\n\n1. **只分析用户的单次问题**，不考虑对话历史或上下文\n2. **优先匹配标准问题库**：如果用户问题与标准问题库中的业务名称相匹配或语义相近，直接返回对应的MCP工具和workflowCode\n3. **workflowCode说明**：\n  - `null`：单步执行，直接调用MCP工具\n  - 非null值 ：复合分类，返回工作流代码给后端处理\n4. **若问题无法匹配标准问题库**，设置 `category=\"知识库查询\"` 和 `servers=[]`\n5. **注意只输出json格式数据\n\n---\n",
+          "originalResult": "<think>\n好的，我现在需要处理用户的查询：“%E6%BC%B3%E6%B2%B3%E7%81%8C%E5%8C%BA%E9%A6%96%E8%BD%AE%E6%98%A5%E7%81%8C%E8%AE%A1%E5%88%9B%E4%BE%9B%E6%B0%B4%E6%80%BB%E9%87%8F%E6%98%AF%E5%A4%9A%E5%B0%91%E5%B7%B2%E4%BE%9B%E6%B0%B4%E5%A4%9A%E5%B0%91%E8%BF%98%E9%9C%80%E4%BE%9B%E6%B0%B4%E5%A4%9A%E5%B0%91”。首先，我需要解码这个URL编码的字符串。\n\n解码后得到的是：“漳河灌区首轮春灌供水总量是多少已供水多少还需供水多少”。用户的问题是关于漳河灌区春季灌溉的供水总量，以及已经供水和还需要供水的数量。接下来，我需要根据标准问题库来匹配这个查询。\n\n查看标准问题库中的水资源类别，有一个条目是“计划供水总量是多少？（已供水、还需供水）”，对应的MCP工具是querySupplyDemandContrast，属于水资源类别，workflowCode为null。用户的问题正好是询问供水总量、已供水和还需供水的情况，因此应该匹配这个标准问题。\n\n确认没有其他更相关的条目后，确定使用Evangelion-mcp-zh-search-info服务器下的querySupplyDemandContrast工具。不需要复合工作流，所以workflowCode保持null。分类为水资源，意图是查询计划供水总量及分配情况。最后，按照要求输出JSON格式的结果。\n</think>\n\n```json\n{\n  \"intent\": \"查询漳河灌区首轮春灌供水总量及分配情况\",\n  \"businessName\": \"计划供水总量是多少？（已供水、还需供水）\",\n  \"category\": \"水资源\",\n  \"workflowCode\": null,\n  \"servers\": {\n    \"serverName\": \"Evangelion-mcp-zh-search-info\",\n    \"tools\": \"querySupplyDemandContrast\"\n  }\n}\n```",
+          "intent": "查询漳河灌区首轮春灌供水总量及分配情况",
+          "businessName": "计划供水总量是多少？（已供水、还需供水）",
+          "category": "水资源",
+          "workflowCode": null,
+          "servers": {
+            "serverName": "Evangelion-mcp-zh-search-info",
+            "tools": "querySupplyDemandContrast"
+          }
+        }
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 6,
+      "message": "想知道现在漳河的生活供水流量，还有工业用水、农业灌溉、发电用水的供水流量分别是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 7,
+      "message": "截至 2024 年 10 月 1 日，漳河当前生活供水流量是多少，工业、农业、发电的供水流量分别是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": 0,
+        "message": "SUCCESS",
+        "data": {
+          "message": "%E6%BC%B3%E6%B2%B3%E7%81%8C%E5%8C%BA%E9%A6%96%E8%BD%AE%E6%98%A5%E7%81%8C%E8%AE%A1%E5%88%92%E4%BE%9B%E6%B0%B4%E6%80%BB%E9%87%8F%E6%98%AF%E5%A4%9A%E5%B0%91%E5%B7%B2%E4%BE%9B%E6%B0%B4%E5%A4%9A%E5%B0%91%E8%BF%98%E9%9C%80%E4%BE%9B%E6%B0%B4%E5%A4%9A%E5%B0%91",
+          "sysPrompt": "# 水资源意图识别系统 v2.0\n\n你是一名智能意图识别系统，负责分析用户的自然语言问题，识别其业务类型、所需的 MCP 工具、或对应的复合业务工作流。\n\n---\n\n## 【识别流程】\n\n### 分类决策树\n\n按以下顺序判断用户问题的分类：\n\n```\n第一层：问题是否在标准问题库中？\n├─ 是 → 按标准问题库返回对应的工具、Server和workflowCode\n└─ 否 → 进入第二层\n\n第二层：分析问题的业务类型（水资源/防汛/调度等）\n└─ 是否在MCP工具知识库中找到可执行的工具？\n├─ 是 → 识别对应的MCP工具和Server，返回结果\n└─ 否 → 进入第三层\n\n第三层：问题无法通过MCP工具执行\n└─ 返回知识库查询标识\n{\n\"intent\": \"未知意图\",\n\"category\": \"知识库查询\",\n\"workflowCode\": \"KB_QUERY\"\n}\n```\n\n---\n\n## 【输出格式】\n\n请严格按照以下JSON格式输出，不要包含其他文字或解释：\n{\n  \"intent\": \"用户意图的简要描述\",\n  \"businessName\": \"对应标准问题库中的业务名称\",\n  \"category\": \"水资源 | 防汛 | 调度 | 复合分类 | 未知\",\n  \"workflowCode\": \"仅复合分类时返回工作流代码，其他情况为 null\",\n  \"servers\": {\n    \"serverName\": \"MCP_SERVER_NAME\",\n    \"tools\": \"tool1\"\n  }\n}\n\n**字段说明：**\n\n- `intent`：用户问题的核心诉求\n- `businessName`：对应标准问题库中的业务名称，便于追踪和关联\n- `category`：业务分类\n- `workflowCode`：工作流代码，仅复合分类时有值；单步执行或未知则为 null\n- `servers`：调用的MCP服务及工具列表；未知分类时为 []\n\n\n---\n## 【标准问题库】\n  | 类型   | 业务名称                                       | MCP Server                        | MCP Tools                                                                     | workflowCode |\n|------|--------------------------------------------|-----------------------------------|-------------------------------------------------------------------------------|--------------|\n| 水资源  | 漳河当前生活供水流量是多少？（工业、农业、发电）                   | Evangelion-mcp-zh-search-info     | getWaterSupplyFlow                                                            | null         |\n| 水资源  | 漳河灌区蓄水总量是多少？有效水量是多少？                       | Evangelion-mcp-zh-search-info     | getWrmStorageRes                                                              | null         |\n| 水资源  | 计划供水总量是多少？（已供水、还需供水）                       | Evangelion-mcp-zh-search-info     | querySupplyDemandContrast                                                     | null         |\n| 水资源  | 今年农业灌溉水方是多少？（生态）                           | Evangelion-mcp-zh-search-info     | selectWarehouseAndWaterTotalTable                                             | null         |\n| 复合分类 | 按当前雨情/落地雨并考虑降雨预测，入库洪量多少，库水位最高涨至多少          |        |  | 3ae34797-5d3e-43e1-8e50-5b4fcbb2b96a         |\n| 复合分类 | 某站某时间段累计降雨/某库某时间段累计来水，与多年同期/去年相比偏多/偏少几成    |  |            | 7b76d043-ba3f-44ba-b907-03f6d3c17e32         |\n| 复合分类 | 按当前流量，某闸开闸后多长时间可达某断面                       |                                   |           | null         |\n| 复合分类 | 按当前供用水，多长时间后需开/调/关某进水闸                     |                                   |           | null         |\n| 复合分类 | 按当前流量，某闸开闸后多长时间可达某断面                       |                                   |           | null         |\n| 复合分类 | 按当前供用水，多长时间后需开/调/关某进水闸                     |                                   |           | NULL         |\n| 复合分类 | 帮我总结下今年1-6月份白蚁防治/维修养护/日常巡查的工作成果            |                                   |                                                                               | NULL         |\n| 防汛   | 某站历史最高水位/最大流量/最大雨强及发生时间                    | Evangelion-mcp-zh-search-info     | getHistoryRiverInfo                                                           | null         |\n| 防汛   | 现在哪些地方在下雨                                  | Evangelion-mcp-zh-search-info     | getRiverRInfo                                                                 | null         |\n| 防汛   | 明日流域平均面雨量是多少?                              | Evangelion-mcp-zh-flood           | queryIrrRainConditions                                                        | null         |\n| 防汛   | 明日灌区平均面雨量是多少?                              | Evangelion-mcp-zh-flood           | queryRainConditions                                                           | null         |\n| 防汛   | 漳河水库过去、未来24小时降雨量是多少？                       | Evangelion-mcp-zh-flood           | getWaterAndRainData                                                           | null         |\n| 防汛   | 当前1小时最大降雨量在哪？                              | Evangelion-mcp-zh-search-info     | getHistoryRsvrInfo                                                            | null         |\n| 防汛   | 漳河水库入库流量是多少？                               | Evangelion-mcp-zh-flood           | getWaterAndRainData                                                           | null         |\n| 防汛   | 漳河水库出库流量是多少？                               | Evangelion-mcp-zh-flood           | getWaterAndRainData                                                           | null         |\n| 防汛   | 漳河水库当前水位、库容是多少？鸡公尖的水位、库容                   | Evangelion-mcp-zh-flood           | getRscpData                                                                   | null         |\n| 防汛   | 漳河水库当前可抗雨量是多少？                             | Evangelion-mcp-zh-flood           | getResistanceData                                                             | null         |\n| 防汛  | 漳河灌区今年降雨量多少？                      | Evangelion-mcp-zh-flood       | queryRainSituation                                                            | null         |\n| 调度  | 调整闸门开度，如：请根据XX闸门调度令调整闸门开度。        | Evangelion-mcp-zh-scheduling  | navigateToSchedulingPage                                                      | null         |\n| 调度 | 中稻当前生育阶段，未来10天需漳河水库亩均供水多少（水方）    | Evangelion-mcp-zh-scheduling  |      queryDefaultCalculationResult     | null         |\n\n---\n## 【MCP工具知识库】\n  \n### Evangelion-Rag\n\n查询文档知识库相关数据\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `queryKnowledgeAgent` | 知识库查询 |\n\n---\n\n### Evangelion-mcp-zh-search-info\n\n漳河水库-水资源查询业务\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `getRepair` | 维修养护状况 |\n| `getHistoryVideoInfo` | 根据条件查询数据库中视频测站历史数据 |\n| `queryRiverConditions` | 河道水情概览 |\n| `querySupplyDemandContrast` | 漳河灌区整体供水总量与需水量的对比分析（含时段差异、各类型供水需水统计） |\n| `getHistoryRsvrInfo` | 根据条件查询数据库中水库测站历史数据 |\n| `queryChannelConditions` | 渠道水情概览 |\n| `getHistoryRiverInfo` | 根据条件查询数据库中渠道/河道测站历史数据 |\n| `getCaseStatistics` | 水政巡查状况 |\n| `getRsvrRInfo` | 根据条件查询数据库中水库测站实时数据 |\n| `queryIrrWaterSupply` | 获得当前漳河灌区/各干渠供水总量数据 |\n| `queryWaterQuality` | 水质概览 |\n| `queryWaterConditions` | 水库水情概览 |\n| `selectWarehouseAndWaterTotalTable` | 水资源分类，进行供水统计分析出库水方的数据分析 |\n| `queryWaterSituation` | 墒情概览 |\n| `getVideoRInfo` | 根据条件查询数据库中视频测站实力数据 |\n| `getWaterSupplyFlow` | 获得当前漳河灌区生活供水流量数据 |\n| `getWrmStorageRes` | 漳河/各干渠蓄水量概览 |\n| `getWaterUse` | 城乡用水概览 |\n| `getRiverRInfo` | 根据条件查询数据库中渠道/河道测站实时数据 |\n\n---\n\n### Evangelion-Math\n\n查询漳河系统业务数据库中天气预警相关数据\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `calculateRingGrowthRate` | 计算环比增长率 |\n| `calculateMultipleRingGrowthRates` | 计算多个时期的环比增长率序列 |\n\n---\n\n### Evangelion-Weather\n\n查询漳河系统业务数据库中天气预警相关数据\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `getWeatherData` | 根据条件查询气象预警/预测数据 |\n\n---\n\n### mcp-server\n\nmcp-server\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `searchMcpServer` | 根据任务描述和关键词搜索合适的 MCP Server |\n| `useTool` | 使用指定 MCP Server 的工具 |\n| `addMcpServer` | 添加并初始化一个MCP Server，根据Nacos中的配置与该MCP Server建立连接，等待调用 |\n| `debugMcpService` | 调试 MCP 服务连接状态，帮助诊断连接问题 |\n\n---\n\n### Evangelion-mcp-zh-flood\n\n漳河水库-水资源防汛业务\n\n| 工具名 | 功能描述 |\n|--------|----------|\n| `queryRainSituation` | 漳河灌区/流域年度降雨形势数据 |\n| `getModelStatisticsOfIndicators` | 数字漳河项目，防洪调度平台，根据时间范围查询洪水预报-方案计算流程流域降雨过程数据,输出预报成果过程分析 |\n| `queryRainConditions` | 流域雨情概览 |\n| `queryIrrRainConditions` | 漳河灌区范围内降雨整体趋势概览（含漳河流域近24小时平均降雨量、最大降雨量等数据） |\n| `testSchemeCalculationAPI` | 数字漳河项目，防洪调度平台，根据时间范围查询洪水预报-方案计算流程测试方法 |\n| `getRscpData` | 获得漳河水库有效库容数据 |\n| `getWaterAndRainData` | 获得漳河水库当前水雨情数据 |\n| `buildSchemeCalculation` | 数字漳河项目，防洪调度平台，根据时间范围构建洪水预报方案计算流程查询条件方案 |\n| `callSchemeCalculation` | 数字漳河项目，防洪调度平台，根据时间范围查询洪水预报-方案计算流程流域降雨过程数据,分析当前的雨情数据 |\n| `getResistanceData` | 获得漳河水库可抗雨量数据 |\n\n---\n\n\n\n## 【示例分析】\n\n**示例1：单步执行 - 水资源类**\n\n  ```json\n{\n  \"intent\": \"查询漳河灌区当前生活供水流量\",\n  \"businessName\": \"漳河当前生活供水流量是多少？（工业、农业、发电）\",\n  \"category\": \"水资源\",\n  \"workflowCode\": null,\n  \"servers\": {\n    \"serverName\": \"Evangelion-mcp-zh-search-info\",\n    \"tools\": \"getWaterSupplyFlow\"\n  }\n}\n  ```\n\n**示例2：单步执行 - 防汛查询类**\n\n  ```json\n{\n  \"intent\": \"查询漳河水库可抗雨量\",\n  \"businessName\": \"漳河水库当前可抗雨量是多少？\",\n  \"category\": \"防汛\",\n  \"workflowCode\": null,\n  \"servers\": {\n    \"serverName\": \"Evangelion-mcp-zh-flood\",\n    \"tools\": \"getResistanceData\"\n  }\n}\n  ```\n\n**示例3：复合分类 - 工作流**\n\n  ```json\n{\n  \"intent\": \"分析当前及预测雨情下的入库洪量和库水位变化\",\n  \"businessName\": \"按当前雨情/落地雨并考虑降雨预测，入库洪量多少，库水位最高涨至多少\",\n  \"category\": \"复合分类\",\n  \"workflowCode\": \"3ae34797-5d3e-43e1-8e50-5b4fcbb2b96a\"\n}\n  ```\n\n**示例5：未知分类**\n\n  ```json\n{\n  \"intent\": \"未知意图\",\n  \"category\": \"知识库查询\",\n  \"workflowCode\": \"KB_QUERY\"\n}\n  ```\n\n---\n\n## 【注意事项】\n\n1. **只分析用户的单次问题**，不考虑对话历史或上下文\n2. **优先匹配标准问题库**：如果用户问题与标准问题库中的业务名称相匹配或语义相近，直接返回对应的MCP工具和workflowCode\n3. **workflowCode说明**：\n  - `null`：单步执行，直接调用MCP工具\n  - 非null值 ：复合分类，返回工作流代码给后端处理\n4. **若问题无法匹配标准问题库**，设置 `category=\"知识库查询\"` 和 `servers=[]`\n5. **注意只输出json格式数据\n\n---\n",
+          "originalResult": "<think>\n好的，我现在需要处理用户的查询：“%E6%BC%B3%E6%B2%B3%E7%81%8C%E5%8C%BA%E9%A6%96%E8%BD%AE%E6%98%A5%E7%81%8C%E8%AE%A1%E5%88%92%E4%BE%9B%E6%B0%B4%E6%80%BB%E9%87%8F%E6%98%AF%E5%A4%9A%E5%B0%91%E5%B7%B2%E4%BE%9B%E6%B0%B4%E5%A4%9A%E5%B0%91%E8%BF%98%E9%9C%80%E4%BE%9B%E6%B0%B4%E5%A4%9A%E5%B0%91”。首先，我需要解码这个URL编码的字符串。\n\n解码后得到的是：“漳河灌区首轮春灌计划供水总量是多少 已供水多少 还需供水多少”。用户的问题是关于漳河灌区春季灌溉的供水计划，包括总供水量、已供水量和还需供水量。接下来，我需要检查标准问题库中的业务名称是否匹配。\n\n在标准问题库的水资源类别下，有一个业务名称是“计划供水总量是多少？（已供水、还需供水）”，对应的MCP工具是querySupplyDemandContrast，服务器是Evangelion-mcp-zh-search-info，workflowCode为null。用户的问题正好涉及计划供水总量以及已供水和需供水的情况，因此应该匹配这个标准问题。\n\n接下来确认是否属于复合分类。根据问题内容，用户只需要查询计划供水的情况，没有涉及多个步骤或复杂的工作流，因此不需要复合分类。同时，问题明确属于水资源管理范畴，所以分类为“水资源”。\n\n最后，确保输出格式正确，不包含其他多余信息。根据示例，正确的JSON结构应包含intent、businessName、category、workflowCode和servers。这里servers应包含对应的服务器名称和工具名querySupplyDemandContrast。\n</think>\n\n```json\n{\n  \"intent\": \"查询漳河灌区首轮春灌计划供水总量及供水情况\",\n  \"businessName\": \"计划供水总量是多少？（已供水、还需供水）\",\n  \"category\": \"水资源\",\n  \"workflowCode\": null,\n  \"servers\": {\n    \"serverName\": \"Evangelion-mcp-zh-search-info\",\n    \"tools\": \"querySupplyDemandContrast\"\n  }\n}\n```",
+          "intent": "查询漳河灌区首轮春灌计划供水总量及供水情况",
+          "businessName": "计划供水总量是多少？（已供水、还需供水）",
+          "category": "水资源",
+          "workflowCode": null,
+          "servers": {
+            "serverName": "Evangelion-mcp-zh-search-info",
+            "tools": "querySupplyDemandContrast"
+          }
+        }
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 8,
+      "message": "漳河当前生活供水流量具体是多少，另外工业、农业、发电这三个领域的供水流量各为多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 9,
+      "message": "2024 年 7 月下旬漳河当前生活供水流量是多少，工业、农业、发电的供水流量分别是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 10,
+      "message": "现在漳河的生活供水流量是多少，工业、农业、发电对应的供水流量能提供一下吗",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 11,
+      "message": "2024 年 6 月底漳河灌区蓄水总量是多少，有效水量是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 12,
+      "message": "现在漳河灌区的蓄水总量是多少，其中有效水量有多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 13,
+      "message": "截至 2024 年 8 月 15 日，漳河灌区蓄水总量是多少，有效水量是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 14,
+      "message": "漳河灌区当前的蓄水总量是多少，有效水量具体是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 15,
+      "message": "2024 年 7 月中旬漳河灌区蓄水总量是多少，有效水量是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 16,
+      "message": "想知道漳河灌区现在的蓄水总量，还有有效水量是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 17,
+      "message": "截至 2024 年 9 月 30 日，漳河灌区蓄水总量是多少，有效水量是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 18,
+      "message": "漳河灌区当前的蓄水总量数据是多少，有效水量是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 19,
+      "message": "2024 年 5 月底漳河灌区蓄水总量是多少，有效水量是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 20,
+      "message": "现在漳河灌区的蓄水总量是多少，有效水量能告知一下具体数值吗",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 21,
+      "message": "2024 年漳河灌区计划供水总量是多少，已经供水多少，还需要供水多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 22,
+      "message": "今年漳河的计划供水总量是多少，已供水的量和还需供水的量分别是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 23,
+      "message": "截至 2024 年 8 月，漳河计划供水总量是多少，已供水多少，还需供水多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 24,
+      "message": "漳河 2024 年度的计划供水总量是多少，已完成供水多少，剩余还需供水多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 25,
+      "message": "2024 年上半年漳河计划供水总量是多少，已供水的量和还需供水的量各是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 26,
+      "message": "想知道漳河今年的计划供水总量是多少，已经供水多少，还需要供水多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 27,
+      "message": "截至 2024 年 10 月，漳河计划供水总量是多少，已供水多少，还需供水多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 28,
+      "message": "漳河 2024 年的计划供水总量是多少，已供水总量和还需供水总量分别是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 29,
+      "message": "2024 年第三季度漳河计划供水总量是多少，已供水多少，还需供水多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    },
+    {
+      "cycle_number": 1,
+      "msg_index": 30,
+      "message": "今年漳河的计划供水总量是多少，已供水的数值和还需供水的数值各是多少",
+      "request_time": "2025-10-24 16:39:08",
+      "response": {
+        "code": -1,
+        "message": "500 Server Error: Internal Server Error for url: http://219.138.108.99:8850/ai/agent/intention/recognition?message=%25E6%25BC%25B3%25E6%25B2%25B3%25E7%2581%258C%25E5%258C%25BA%25E9%25A6%2596%25E8%25BD%25AE%25E6%2598%25A5%25E7%2581%258C%25E8%25AE%25A1%25E5%2588%2592%25E4%25BE%259B%25E6%25B0%25B4%25E6%2580%25BB%25E9%2587%258F%25E6%2598%25AF%25E5%25A4%259A%25E5%25B0%2591%25E5%25B7%25B2%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591%25E8%25BF%2598%25E9%259C%2580%25E4%25BE%259B%25E6%25B0%25B4%25E5%25A4%259A%25E5%25B0%2591&userId=1",
+        "data": null
+      }
+    }
+  ]
+}
